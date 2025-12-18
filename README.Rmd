@@ -1,0 +1,54 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# excelcompare
+
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/SchmidtPaul/excelcompare/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/SchmidtPaul/excelcompare/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
+
+Compare Excel files (.xlsx) cell by cell. Unlike standard table comparison tools, excelcompare captures **every cell** in a worksheet - including titles, footnotes, and annotations that live outside the main data table.
+
+## Installation
+
+You can install the development version of excelcompare from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("pak")
+pak::pak("SchmidtPaul/excelcompare")
+```
+
+## Usage
+
+```{r example, eval = FALSE}
+library(excelcompare)
+
+# Compare two Excel files
+differences <- compare_xlsx("file1.xlsx", "file2.xlsx")
+
+# Compare specific sheets
+differences <- compare_xlsx("file1.xlsx", "file2.xlsx", sheet = "Summary")
+```
+
+## Features
+
+- **Cell-level comparison**: Detects differences in any cell, not just tabular data
+- **Position-aware**: Reports exact row and column of each difference
+- **Sheet selection**: Compare specific worksheets by name or index
+- **Clean output**: Returns a tidy tibble of all differences
+
+## Technical Details
+
+Built on [{tidyxl}](https://nacnudus.github.io/tidyxl/) for comprehensive Excel cell reading. Only supports modern Excel formats (.xlsx, .xlsm) - legacy .xls files are not supported.
