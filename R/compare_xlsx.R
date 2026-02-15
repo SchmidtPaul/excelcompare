@@ -9,6 +9,14 @@
 #' @param file2 Path to the second Excel file (.xlsx or .xlsm).
 #' @param sheet Sheet to compare. Can be a sheet name (character) or index
 #'   (integer). Defaults to 1 (first sheet).
+#' @param tolerance Numeric tolerance for value comparison. `NULL` (default)
+#'   uses exact string comparison (original behavior). A numeric value enables
+#'   type-aware comparison where two numeric values are considered equal if
+#'   their absolute difference is at most `tolerance`. Character values that
+#'   look like numbers (including comma-decimal notation like `"10,5"`) are
+#'   automatically parsed.
+#' @param na_equals_zero If `TRUE`, treat pairs where one value is `NA` and
+#'   the other is `0` as identical. Defaults to `FALSE`.
 #'
 #' @return A tibble with columns:
 #'   \describe{
@@ -25,22 +33,36 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Compare two Excel files
+#' # Compare two Excel files (exact string comparison)
 #' differences <- compare_xlsx("report_v1.xlsx", "report_v2.xlsx")
 #'
-#' # Compare a specific sheet by name
-#' differences <- compare_xlsx("data1.xlsx", "data2.xlsx", sheet = "Summary")
+#' # Compare with numeric tolerance
+#' differences <- compare_xlsx("file1.xlsx", "file2.xlsx", tolerance = 0.05)
 #'
-#' # Compare the second sheet by index
-#' differences <- compare_xlsx("file1.xlsx", "file2.xlsx", sheet = 2)
+#' # Treat NA and 0 as identical
+#' differences <- compare_xlsx("file1.xlsx", "file2.xlsx", na_equals_zero = TRUE)
+#'
+#' # Compare a specific sheet
+#' differences <- compare_xlsx("data1.xlsx", "data2.xlsx", sheet = "Summary")
 #' }
-compare_xlsx <- function(file1, file2, sheet = 1) {
+compare_xlsx <- function(file1, file2, sheet = 1,
+                         tolerance = NULL, na_equals_zero = FALSE) {
   # Validate inputs
   if (!file.exists(file1)) {
     cli::cli_abort("File not found: {.file {file1}}")
   }
   if (!file.exists(file2)) {
     cli::cli_abort("File not found: {.file {file2}}")
+  }
+  if (!is.null(tolerance)) {
+    if (!is.numeric(tolerance) || length(tolerance) != 1 || tolerance < 0) {
+      cli::cli_abort(
+        "{.arg tolerance} must be a single non-negative number or {.code NULL}."
+      )
+    }
+  }
+  if (!is.logical(na_equals_zero) || length(na_equals_zero) != 1) {
+    cli::cli_abort("{.arg na_equals_zero} must be {.code TRUE} or {.code FALSE}.")
   }
 
   # Read cells from both files
@@ -62,7 +84,12 @@ compare_xlsx <- function(file1, file2, sheet = 1) {
   # Identify differences
   differences <- comparison |>
     dplyr::filter(
-      !identical_values(.data$value1, .data$value2)
+      !values_are_equal(
+        .data$value1, .data$value2,
+        .data$value_num1, .data$value_num2,
+        tolerance = tolerance,
+        na_equals_zero = na_equals_zero
+      )
     ) |>
     dplyr::mutate(
       status = dplyr::case_when(
@@ -84,7 +111,7 @@ compare_xlsx <- function(file1, file2, sheet = 1) {
 #'
 #' @param cells A tibble from [tidyxl::xlsx_cells()].
 #'
-#' @return A tibble with columns: row, col, address, value.
+#' @return A tibble with columns: row, col, address, value, value_num.
 #'
 #' @noRd
 extract_cell_values <- function(cells) {
@@ -97,21 +124,8 @@ extract_cell_values <- function(cells) {
         !is.na(.data$date) ~ as.character(.data$date),
         .data$is_blank ~ NA_character_,
         TRUE ~ NA_character_
-      )
+      ),
+      value_num = .data$numeric
     ) |>
-    dplyr::select("row", "col", "address", "value")
-}
-
-#' Check if Two Values are Identical
-#'
-#' Handles NA comparison correctly (NA == NA returns TRUE).
-#'
-#' @param x First value.
-#' @param y Second value.
-#'
-#' @return Logical vector.
-#'
-#' @noRd
-identical_values <- function(x, y) {
-  (is.na(x) & is.na(y)) | (!is.na(x) & !is.na(y) & x == y)
+    dplyr::select("row", "col", "address", "value", "value_num")
 }

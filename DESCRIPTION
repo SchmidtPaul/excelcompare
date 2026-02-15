@@ -17,6 +17,7 @@ BugReports: https://github.com/SchmidtPaul/excelcompare/issues
 Imports:
     cli,
     dplyr,
+    readr,
     tidyxl
 Suggests:
     testthat (>= 3.0.0),

@@ -4,7 +4,7 @@
 \alias{compare_xlsx}
 \title{Compare Two Excel Files Cell by Cell}
 \usage{
-compare_xlsx(file1, file2, sheet = 1)
+compare_xlsx(file1, file2, sheet = 1, tolerance = NULL, na_equals_zero = FALSE)
 }
 \arguments{
 \item{file1}{Path to the first Excel file (.xlsx or .xlsm).}
@@ -13,6 +13,16 @@ compare_xlsx(file1, file2, sheet = 1)
 
 \item{sheet}{Sheet to compare. Can be a sheet name (character) or index
 (integer). Defaults to 1 (first sheet).}
+
+\item{tolerance}{Numeric tolerance for value comparison. \code{NULL} (default)
+uses exact string comparison (original behavior). A numeric value enables
+type-aware comparison where two numeric values are considered equal if
+their absolute difference is at most \code{tolerance}. Character values that
+look like numbers (including comma-decimal notation like \code{"10,5"}) are
+automatically parsed.}
+
+\item{na_equals_zero}{If \code{TRUE}, treat pairs where one value is \code{NA} and
+the other is \code{0} as identical. Defaults to \code{FALSE}.}
 }
 \value{
 A tibble with columns:
@@ -34,13 +44,16 @@ the main data table.
 }
 \examples{
 \dontrun{
-# Compare two Excel files
+# Compare two Excel files (exact string comparison)
 differences <- compare_xlsx("report_v1.xlsx", "report_v2.xlsx")
 
-# Compare a specific sheet by name
-differences <- compare_xlsx("data1.xlsx", "data2.xlsx", sheet = "Summary")
+# Compare with numeric tolerance
+differences <- compare_xlsx("file1.xlsx", "file2.xlsx", tolerance = 0.05)
 
-# Compare the second sheet by index
-differences <- compare_xlsx("file1.xlsx", "file2.xlsx", sheet = 2)
+# Treat NA and 0 as identical
+differences <- compare_xlsx("file1.xlsx", "file2.xlsx", na_equals_zero = TRUE)
+
+# Compare a specific sheet
+differences <- compare_xlsx("data1.xlsx", "data2.xlsx", sheet = "Summary")
 }
 }
