@@ -4,11 +4,14 @@
 
 **excelcompare** is an R package for comparing Excel files (.xlsx/.xlsm) at the cell level.
 
-### Key Features (Planned)
+### Key Features
 - **Cell-by-cell comparison**: Compare ALL cells in a worksheet, not just tabular data
 - **Full coverage**: Includes titles, footnotes, annotations above/below tables
-- **Format comparison** (future): Font, colors, borders, etc
-- **Helper functions**: Open two Excel files side by side for visual comparison
+- **Multi-sheet support**: Compare single, multiple, or all shared sheets
+- **Numeric tolerance**: Type-aware comparison with configurable tolerance
+- **Custom output**: S3 class `excelcompare_diff` with waldo-inspired print method
+- **Format comparison** (roadmap): Font, colors, borders, etc.
+- **Side-by-side helper** (roadmap): Open two Excel files in Excel
 
 ### Technical Stack
 - **Backend**: `tidyxl` - reads every cell with position, content, and formatting
@@ -31,9 +34,18 @@
 
 ### Package Structure
 ```
-R/               # R source files
-tests/testthat/  # Unit tests
-man/             # Generated documentation (do not edit)
+R/                     # R source files
+  compare_xlsx.R       # Main function + validation/IO helpers
+  compare_values.R     # values_are_equal() comparison logic
+  safe_to_numeric.R    # Exported numeric conversion utility
+  print.R              # S3 print/summary methods
+  excelcompare-package.R  # Package-level imports
+tests/testthat/        # Unit tests (111 tests)
+  fixtures/            # Test Excel files
+  _snaps/              # Snapshot test outputs
+inst/extdata/          # Example data for runnable examples
+vignettes/             # Getting Started vignette
+man/                   # Generated documentation (do not edit)
 ```
 
 ### Running Tests
@@ -46,3 +58,5 @@ devtools::check()
 - `tidyxl`: Excel cell reading
 - `dplyr`: Data manipulation
 - `cli`: User-friendly console output
+- `rlang`: `.data` pronoun, `is_interactive()`
+- `readr`: Locale-aware number parsing (in `safe_to_numeric()`)

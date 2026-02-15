@@ -2,27 +2,38 @@
 % Please edit documentation in R/safe_to_numeric.R
 \name{safe_to_numeric}
 \alias{safe_to_numeric}
-\title{Convert value to numeric handling multiple decimal separators}
+\title{Convert values to numeric handling multiple decimal separators}
 \usage{
 safe_to_numeric(val)
 }
 \arguments{
-\item{val}{A value of any type to convert to numeric.}
+\item{val}{A numeric, character, or other vector to convert to numeric.}
 }
 \value{
-Numeric value or \code{NA} if conversion fails.
+Numeric vector of the same length, with \code{NA} for values that
+cannot be parsed.
 }
 \description{
-Attempts to convert a value to numeric. If the value is already numeric,
-returns it as-is. If it's a character string, tries parsing with \code{"."} as
-decimal separator first, then \code{","} if that fails. Only accepts strings that
-contain only digits, separators, and an optional leading minus sign.
+Attempts to convert values to numeric. If the input is already numeric,
+returns it as-is. Character strings are parsed with support for:
+\itemize{
+\item Dot-decimal (\code{"10.5"}) and comma-decimal (\code{"10,5"}) notation
+\item Scientific notation (\code{"1e-5"}, \code{"2.5E+10"})
+\item Thousand separators when both dot and comma are present
+(\code{"1.234,56"} European or \code{"1,234.56"} US)
+}
+}
+\details{
+The function is vectorized: when given a character vector, each element
+is parsed independently.
 }
 \examples{
 safe_to_numeric(10.5)
 safe_to_numeric("10.5")
 safe_to_numeric("10,5")
 safe_to_numeric("-3.14")
-safe_to_numeric("text")
+safe_to_numeric("1e-5")
+safe_to_numeric("1.234,56")
+safe_to_numeric(c("10.5", "10,5", "text", "1e-3"))
 
 }

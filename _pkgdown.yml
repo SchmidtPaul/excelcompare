@@ -1,0 +1,24 @@
+url: https://schmidtpaul.github.io/excelcompare/
+
+template:
+  bootstrap: 5
+  bootswatch: cosmo
+  bslib:
+    primary: "#00923f"
+
+navbar:
+  structure:
+    left: [intro, articles, reference]
+    right: [github]
+  components:
+    github:
+      icon: fab fa-github fa-lg
+      href: https://github.com/SchmidtPaul/excelcompare/
+
+reference:
+- title: Comparison
+  contents:
+  - compare_xlsx
+- title: Utilities
+  contents:
+  - safe_to_numeric

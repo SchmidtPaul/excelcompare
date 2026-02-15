@@ -41,8 +41,8 @@ values_are_equal <- function(value1, value2, num1, num2,
     # Step 4: Numeric NA but character parseable → safe_to_numeric fallback
     need_parse <- remaining & !has_nums & !na1 & !na2
     if (any(need_parse)) {
-      parsed1 <- vapply(value1[need_parse], safe_to_numeric, numeric(1))
-      parsed2 <- vapply(value2[need_parse], safe_to_numeric, numeric(1))
+      parsed1 <- safe_to_numeric(value1[need_parse])
+      parsed2 <- safe_to_numeric(value2[need_parse])
       both_parsed <- !is.na(parsed1) & !is.na(parsed2)
       idx <- which(need_parse)
       result[idx[both_parsed]] <-

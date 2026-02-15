@@ -11,8 +11,14 @@ compare_xlsx(file1, file2, sheet = 1, tolerance = NULL, na_equals_zero = FALSE)
 
 \item{file2}{Path to the second Excel file (.xlsx or .xlsm).}
 
-\item{sheet}{Sheet to compare. Can be a sheet name (character) or index
-(integer). Defaults to 1 (first sheet).}
+\item{sheet}{Sheet(s) to compare. Can be:
+\itemize{
+\item An integer or character scalar (compare a single sheet)
+\item An integer or character vector (compare multiple sheets)
+\item \code{NULL} (compare all sheets that exist in both files)
+}
+
+Defaults to \code{1} (first sheet).}
 
 \item{tolerance}{Numeric tolerance for value comparison. \code{NULL} (default)
 uses exact string comparison (original behavior). A numeric value enables
@@ -27,6 +33,7 @@ the other is \code{0} as identical. Defaults to \code{FALSE}.}
 \value{
 A tibble with columns:
 \describe{
+\item{sheet}{Name of the worksheet}
 \item{row}{Row number of the cell}
 \item{col}{Column number of the cell}
 \item{address}{Excel cell address (e.g., "A1", "B2")}
@@ -34,26 +41,28 @@ A tibble with columns:
 \item{value2}{Cell value in file2 (NA if cell doesn't exist)}
 \item{status}{Type of difference: "modified", "added", or "removed"}
 }
-Returns an empty tibble if files are identical.
+Returns an empty tibble (with all columns) if files are identical.
 }
 \description{
-Compares two Excel files (.xlsx) at the cell level, identifying differences
-in content based on cell position (row, column). This function captures all
-cells in a worksheet, including titles, footnotes, and annotations outside
-the main data table.
+Compares two Excel files (.xlsx/.xlsm) at the cell level, identifying
+differences in content based on cell position (row, column). This function
+captures all cells in a worksheet, including titles, footnotes, and
+annotations outside the main data table.
 }
 \examples{
-\dontrun{
+file1 <- system.file("extdata", "example1.xlsx", package = "excelcompare")
+file2 <- system.file("extdata", "example2.xlsx", package = "excelcompare")
+
 # Compare two Excel files (exact string comparison)
-differences <- compare_xlsx("report_v1.xlsx", "report_v2.xlsx")
+compare_xlsx(file1, file2)
 
 # Compare with numeric tolerance
-differences <- compare_xlsx("file1.xlsx", "file2.xlsx", tolerance = 0.05)
+compare_xlsx(file1, file2, tolerance = 0.05)
 
-# Treat NA and 0 as identical
-differences <- compare_xlsx("file1.xlsx", "file2.xlsx", na_equals_zero = TRUE)
+# Multi-sheet files
+multi1 <- system.file("extdata", "example_multi1.xlsx", package = "excelcompare")
+multi2 <- system.file("extdata", "example_multi2.xlsx", package = "excelcompare")
 
-# Compare a specific sheet
-differences <- compare_xlsx("data1.xlsx", "data2.xlsx", sheet = "Summary")
-}
+# Compare all shared sheets
+compare_xlsx(multi1, multi2, sheet = NULL)
 }

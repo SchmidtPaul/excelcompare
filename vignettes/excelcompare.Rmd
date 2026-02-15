@@ -1,0 +1,116 @@
+---
+title: "Getting Started with excelcompare"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting Started with excelcompare}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Overview
+
+**excelcompare** compares Excel files (.xlsx/.xlsm) at the cell level.
+Unlike tools that only compare tabular data, excelcompare captures
+*every cell* in a worksheet — including titles, footnotes, and
+annotations outside the main data table.
+
+```{r setup}
+library(excelcompare)
+```
+
+## Basic Comparison
+
+The main function is `compare_xlsx()`. It takes two file paths and
+returns a tibble of cell-level differences.
+
+```{r basic}
+file1 <- system.file("extdata", "example1.xlsx", package = "excelcompare")
+file2 <- system.file("extdata", "example2.xlsx", package = "excelcompare")
+
+diffs <- compare_xlsx(file1, file2)
+diffs
+```
+
+Each row represents one cell that differs between the two files:
+
+- **sheet**: the worksheet name
+- **address**: the Excel cell address (e.g., "A1", "B3")
+- **value1** / **value2**: the cell content in file 1 and file 2
+- **status**: `"modified"` (changed), `"added"` (only in file 2), or
+  `"removed"` (only in file 1)
+
+## Numeric Tolerance
+
+By default, values are compared as exact strings. If you expect small
+numeric differences (e.g., from rounding), use the `tolerance` parameter:
+
+```{r tolerance}
+# Treat differences up to 0.05 as equal
+diffs_tol <- compare_xlsx(file1, file2, tolerance = 0.05)
+diffs_tol
+```
+
+Tolerance-aware comparison automatically handles:
+
+- Numeric cells stored as numbers
+- Text cells that look like numbers (including comma-decimal like `"10,5"`)
+- Scientific notation (e.g., `"1e-5"`)
+
+## NA-equals-Zero
+
+In some workflows, empty cells and zero-valued cells are treated as
+equivalent. Enable this with `na_equals_zero = TRUE`:
+```{r na-zero}
+compare_xlsx(file1, file2, na_equals_zero = TRUE)
+```
+
+## Multi-Sheet Comparison
+
+Use the `sheet` parameter to control which sheets are compared:
+
+```{r multi-sheet}
+multi1 <- system.file("extdata", "example_multi1.xlsx", package = "excelcompare")
+multi2 <- system.file("extdata", "example_multi2.xlsx", package = "excelcompare")
+
+# Compare all shared sheets (sheet = NULL)
+all_diffs <- compare_xlsx(multi1, multi2, sheet = NULL)
+all_diffs
+```
+
+You can also specify sheets by name or index:
+
+```{r specific-sheets}
+# By name
+compare_xlsx(multi1, multi2, sheet = "Data")
+
+# Multiple sheets
+compare_xlsx(multi1, multi2, sheet = c("Data", "Summary"))
+```
+
+## Summary View
+
+For a quick overview, use `summary()`:
+
+```{r summary}
+summary(all_diffs)
+```
+
+## Utility: safe_to_numeric()
+
+The package also exports `safe_to_numeric()`, which converts character
+values to numeric while handling multiple decimal separators:
+
+```{r safe-numeric}
+safe_to_numeric("10.5")
+safe_to_numeric("10,5")
+safe_to_numeric("1.234,56")
+safe_to_numeric("1e-5")
+safe_to_numeric(c("10.5", "10,5", "text"))
+```

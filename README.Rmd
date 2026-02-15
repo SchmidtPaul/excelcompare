@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 # excelcompare
 
 <!-- badges: start -->
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![R-CMD-check](https://github.com/SchmidtPaul/excelcompare/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/SchmidtPaul/excelcompare/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
@@ -30,25 +31,39 @@ You can install the development version of excelcompare from [GitHub](https://gi
 pak::pak("SchmidtPaul/excelcompare")
 ```
 
-## Usage
+## Example
 
-```{r example, eval = FALSE}
+```{r example}
 library(excelcompare)
 
-# Compare two Excel files
-differences <- compare_xlsx("file1.xlsx", "file2.xlsx")
+# Paths to example Excel files shipped with the package
+path1 <- system.file("extdata", "example1.xlsx", package = "excelcompare")
+path2 <- system.file("extdata", "example2.xlsx", package = "excelcompare")
 
-# Compare specific sheets
-differences <- compare_xlsx("file1.xlsx", "file2.xlsx", sheet = "Summary")
+# Compare the two files
+diff <- compare_xlsx(path1, path2)
+
+# The result is a tibble with one row per difference
+diff
+```
+
+```{r print}
+# The print method shows waldo-inspired diffs
+print(diff)
 ```
 
 ## Features
 
-- **Cell-level comparison**: Detects differences in any cell, not just tabular data
-- **Position-aware**: Reports exact row and column of each difference
-- **Sheet selection**: Compare specific worksheets by name or index
-- **Clean output**: Returns a tidy tibble of all differences
+- **Cell-level comparison** - Detects differences in any cell, not just tabular data
+- **Numeric tolerance** - `tolerance` parameter for floating-point comparison
+- **NA-equals-zero** - `na_equals_zero` parameter to treat empty cells and zeros as equal
+- **Multi-sheet support** - Compare specific or all shared sheets (`sheet` parameter)
+- **Clean diff output** - S3 print/summary methods with waldo-inspired formatting
+- **`safe_to_numeric()`** - Exported utility for robust numeric conversion (handles European formats, thousand separators)
 
-## Technical Details
+## Learn more
 
-Built on [{tidyxl}](https://nacnudus.github.io/tidyxl/) for comprehensive Excel cell reading. Only supports modern Excel formats (.xlsx, .xlsm) - legacy .xls files are not supported.
+- [Getting Started vignette](https://schmidtpaul.github.io/excelcompare/articles/excelcompare.html)
+- [Function reference](https://schmidtpaul.github.io/excelcompare/reference/)
+
+Built on [{tidyxl}](https://nacnudus.github.io/tidyxl/) for comprehensive Excel cell reading. Only supports modern Excel formats (.xlsx, .xlsm).
